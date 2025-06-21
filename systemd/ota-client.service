@@ -1,0 +1,81 @@
+[Unit]
+Description=OTA Client Daemon for Raspberry Pi Kernel Updates
+Documentation=https://github.com/your-org/ota_client
+After=network-online.target
+Wants=network-online.target
+ConditionPathExists=/etc/ota-client/config.toml
+
+[Service]
+Type=simple
+User=root
+Group=root
+
+# Main service command
+ExecStart=/usr/local/bin/ota-client daemon --config /etc/ota-client/config.toml
+
+# Reload configuration on SIGHUP
+ExecReload=/bin/kill -HUP $MAINPID
+
+# Working directory
+WorkingDirectory=/opt/ota
+
+# Environment variables
+Environment=RUST_LOG=info
+Environment=RUST_BACKTRACE=1
+
+# Restart policy
+Restart=always
+RestartSec=10
+StartLimitInterval=300
+StartLimitBurst=5
+
+# Security settings
+NoNewPrivileges=false
+PrivateTmp=true
+ProtectSystem=false
+ProtectHome=true
+ProtectKernelTunables=false
+ProtectKernelModules=false
+ProtectControlGroups=false
+
+# Resource limits
+LimitNOFILE=1024
+LimitNPROC=512
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=ota-client
+
+# Process management
+KillMode=mixed
+KillSignal=SIGTERM
+TimeoutStopSec=30
+
+[Install]
+WantedBy=multi-user.target
+
+# Installation Instructions:
+# ========================
+# 
+# 1. Copy this file to /etc/systemd/system/ota-client.service
+# 2. Copy the binary to /usr/local/bin/ota-client
+# 3. Create config directory: sudo mkdir -p /etc/ota-client
+# 4. Copy config template: sudo cp config/client.toml /etc/ota-client/config.toml
+# 5. Edit configuration: sudo nano /etc/ota-client/config.toml
+# 6. Create working directory: sudo mkdir -p /opt/ota/downloads
+# 7. Set permissions: sudo chown -R root:root /opt/ota /etc/ota-client
+# 8. Reload systemd: sudo systemctl daemon-reload
+# 9. Enable service: sudo systemctl enable ota-client
+# 10. Start service: sudo systemctl start ota-client
+# 11. Check status: sudo systemctl status ota-client
+# 12. View logs: sudo journalctl -u ota-client -f
+#
+# Service Management Commands:
+# ===========================
+# Start:    sudo systemctl start ota-client
+# Stop:     sudo systemctl stop ota-client
+# Restart:  sudo systemctl restart ota-client
+# Status:   sudo systemctl status ota-client
+# Logs:     sudo journalctl -u ota-client
+# Reload:   sudo systemctl reload ota-client  (or kill -HUP <pid>) 

@@ -1,0 +1,68 @@
+# OTA Client Configuration Template
+# 
+# This file contains the default configuration for the OTA (Over-The-Air) client.
+# Copy this file to /etc/ota-client/config.toml for production use.
+#
+# For development/testing, you can place it in your working directory or 
+# specify the path using the --config option.
+
+# Update check frequency in minutes
+# The daemon will check for new kernel updates every N minutes
+# Minimum: 1 minute, Recommended: 60 minutes for production
+check_interval_minutes = 60
+
+# Local download directory for temporary files
+# Development: Use "./downloads" for local testing
+# Production: Use "/opt/ota/downloads" or similar system directory
+download_path = "./downloads"
+
+# Path to the current kernel image on the system
+# Raspberry Pi 4 typical paths:
+#   - "/boot/kernel8.img" (64-bit ARM kernel)
+#   - "/boot/kernel.img" (32-bit ARM kernel)
+kernel_path = "/boot/kernel.img"
+
+# Path where backup kernel will be stored
+# The client creates a backup before installing new kernels
+# This backup is used for automatic rollback on failure
+backup_path = "/boot/kernel.img.backup"
+
+# Maximum number of retry attempts for failed operations
+# Applies to downloads, server discovery, and installation attempts
+max_retries = 3
+
+# mDNS service name for server discovery
+# The client will automatically discover OTA servers advertising this service
+# Server should register "_ota._tcp.local" service via Bonjour/Avahi
+mdns_service = "_ota._tcp.local"
+
+# Download timeout in seconds
+# Maximum time to wait for download operations (discovery, metadata, kernel download)
+# Set to 90 seconds to prevent hanging on slow networks
+# Adjust based on your network speed and kernel file sizes
+download_timeout_secs = 90
+
+# Fallback server configuration (optional)
+# If mDNS discovery fails, try this server directly
+# Uncomment and modify the URL below for manual server configuration
+# Format: "http://SERVER_IP:PORT" (default port is 8080)
+# fallback_server = "http://192.168.1.100:8080"
+
+# Advanced Configuration (typically not changed)
+# ================================================
+
+# Log level for debugging (uncomment to override)
+# Options: "error", "warn", "info", "debug", "trace"
+# log_level = "info"
+
+# Custom kernel validation (uncomment to enable)
+# Perform additional checks on downloaded kernels
+# validate_kernel_format = true
+
+# Network interface for mDNS discovery (uncomment to specify)
+# Useful if you have multiple network interfaces
+# mdns_interface = "eth0"
+
+# Custom ports (uncomment to override defaults)
+# server_port = 8080
+# mdns_port = 5353
