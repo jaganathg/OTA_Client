@@ -88,8 +88,8 @@ sudo mkdir -p /var/log/ota-client
 
 # Install binary
 echo "Installing binary..."
-sudo cp ota_client /usr/local/bin/
-sudo chmod +x /usr/local/bin/ota_client
+sudo cp ota_client /usr/local/bin/ota-client
+sudo chmod +x /usr/local/bin/ota-client
 
 # Install configuration
 echo "Installing configuration..."
@@ -118,7 +118,7 @@ sudo chmod -R 644 /etc/ota-client/*.toml
 
 # Test binary
 echo "Testing binary..."
-if /usr/local/bin/ota_client --help > /dev/null; then
+if /usr/local/bin/ota-client --help > /dev/null; then
     echo "✓ Binary installation successful"
 else
     echo "✗ Binary test failed"
@@ -136,10 +136,10 @@ echo "4. Check status: sudo systemctl status ota-client"
 echo "5. View logs: sudo journalctl -u ota-client -f"
 echo
 echo "Manual commands:"
-echo "  Check for updates: sudo ota_client check"
-echo "  Force update: sudo ota_client update"
-echo "  Show status: sudo ota_client status"
-echo "  Rollback: sudo ota_client rollback"
+echo "  Check for updates: sudo ota-client check"
+echo "  Force update: sudo ota-client update"
+echo "  Show status: sudo ota-client status"
+echo "  Rollback: sudo ota-client rollback"
 EOF
 
 chmod +x "$DEPLOY_DIR/install.sh"
@@ -166,7 +166,7 @@ echo "4. Start service: sudo systemctl start ota-client"
 echo "5. Check status: sudo systemctl status ota-client"
 echo
 echo -e "${YELLOW}Manual testing:${NC}"
-echo "  sudo ota_client check --config /etc/ota-client/config.toml"
-echo "  sudo ota_client status --config /etc/ota-client/config.toml"
+echo "  sudo ota-client check --config /etc/ota-client/config.toml"
+echo "  sudo ota-client status --config /etc/ota-client/config.toml"
 echo
 echo -e "${GREEN}Happy updating! 🚀${NC}" 

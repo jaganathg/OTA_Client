@@ -1,8 +1,8 @@
 use crate::types::{DownloadProgress, KernelMetadata, OtaConfig, ServerInfo};
 use anyhow::{Context, Result};
+use futures_util::{pin_mut, stream::StreamExt};
 use reqwest::Client;
 use sha2::{Digest, Sha256};
-use futures_util::{pin_mut, stream::StreamExt};
 // use std::io::Write;
 use std::net::SocketAddr;
 use std::time::Duration;
@@ -67,7 +67,8 @@ impl Downloader {
         use mdns::RecordKind;
         use std::collections::HashMap;
 
-        let stream = mdns::discover::all(&self.config.mdns_service, Duration::from_secs(5))
+        info!("Starting mDNS discovery with timeout: 15s");
+        let stream = mdns::discover::all(&self.config.mdns_service, Duration::from_secs(15))
             .context("Failed to start mDNS discovery")?
             .listen();
 
@@ -75,19 +76,28 @@ impl Downloader {
 
         pin_mut!(stream);
         while let Some(Ok(response)) = stream.next().await {
+            info!(
+                "Received mDNS response with {} records",
+                response.records().count()
+            );
             let mut name = String::new();
             let mut ip = None;
             let mut port = None;
 
             for record in response.records() {
+                info!("Processing record: {:?}", &record.kind);
                 match &record.kind {
                     RecordKind::A(addr) => {
                         ip = Some(std::net::IpAddr::V4(*addr));
                         debug!("Found A record: {}", addr);
                     }
                     RecordKind::AAAA(addr) => {
-                        ip = Some(std::net::IpAddr::V6(*addr));
-                        debug!("Found AAAA record: {}", addr);
+                        if !matches!(ip, Some(std::net::IpAddr::V4(_))) {
+                            ip = Some(std::net::IpAddr::V6(*addr));
+                            debug!("Found AAAA record: {}", addr);
+                        } else {
+                            debug!("Found AAAA record: {} (ignored, IPv4 preferred)", addr);
+                        }
                     }
                     RecordKind::SRV {
                         port: srv_port,
@@ -110,8 +120,21 @@ impl Downloader {
                 };
 
                 // Test connectivity before returning
+                info!(
+                    "Found potential server: {}:{}, testing connectivity...",
+                    ip_addr, port_num
+                );
                 if self.test_server_connectivity(&server_info).await.is_ok() {
+                    info!(
+                        "Successfully discovered server via mDNS: {}:{}",
+                        ip_addr, port_num
+                    );
                     return Ok(server_info);
+                } else {
+                    warn!(
+                        "Server {}:{} found via mDNS but connectivity test failed",
+                        ip_addr, port_num
+                    );
                 }
             }
         }
