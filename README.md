@@ -180,3 +180,5 @@ ota-client status --config config/client.toml
 <pre style="background-color:#2d2d2d; color:#bf616a; padding:1em; border-radius:5px;">
 ota-client rollback --config config/client.toml
 </pre> 
+
+This project is in connection with "OTA_Server"
